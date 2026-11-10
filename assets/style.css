@@ -1,0 +1,140 @@
+/* StudyPilot: what the Streamlit theme cannot express.
+   Selectors use the .st-key-* classes Streamlit adds for st.container(key=...),
+   so they do not depend on internal markup that changes between versions. */
+
+:root {
+  --sp-primary: #0F766E;
+  --sp-primary-soft: #E3F1EF;
+  --sp-ink: #1B2A28;
+  --sp-muted: #56635F;
+  --sp-surface: #FFFFFF;
+  --sp-border: #DEDACE;
+  --sp-warn: #B45309;
+  --sp-warn-soft: #FDF6E7;
+  --sp-ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* Readable measure on wide screens, breathing room on small ones */
+[data-testid="stMainBlockContainer"] {
+  max-width: 62rem;
+  padding: 2.5rem 2rem 7rem;
+}
+[data-testid="stBottomBlockContainer"] { max-width: 62rem; padding-left: 2rem; padding-right: 2rem; }
+
+/* ---- Header ---- */
+.sp-hero { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.sp-mark {
+  flex: none; width: 3rem; height: 3rem; border-radius: 0.875rem;
+  background: var(--sp-primary) center / 60% no-repeat
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Ccircle cx='12' cy='12' r='9.2' stroke='white' stroke-width='1.6'/%3E%3Cpath d='M16 8l-2.3 5.7L8 16l2.3-5.7z' fill='white'/%3E%3Ccircle cx='12' cy='12' r='1.1' fill='%230F766E'/%3E%3C/svg%3E");
+}
+.sp-hero > div:not(.sp-pills) { flex: 1 1 20rem; min-width: 0; }
+.sp-title { font-family: Fraunces, Georgia, serif; font-size: 2rem; font-weight: 600;
+  line-height: 1.1; letter-spacing: -0.01em; color: var(--sp-ink); margin: 0; }
+.sp-tagline { color: var(--sp-muted); font-size: 0.9875rem; line-height: 1.5; margin: 0.2rem 0 0; }
+.sp-pills { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-left: auto; }
+.sp-pill {
+  display: inline-flex; align-items: center; gap: 0.4rem; white-space: nowrap;
+  font-size: 0.8125rem; font-weight: 500; color: var(--sp-ink);
+  background: var(--sp-surface); border: 1px solid var(--sp-border);
+  border-radius: 999px; padding: 0.3rem 0.7rem;
+}
+.sp-dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #15803D; }
+.sp-dot.off { background: #B42318; }
+
+/* ---- Cards: examples, steps, metrics ---- */
+[class*="st-key-example-"], [class*="st-key-step-"] {
+  background: var(--sp-surface);
+  transition: border-color 180ms var(--sp-ease), box-shadow 180ms var(--sp-ease),
+              transform 180ms var(--sp-ease);
+}
+[class*="st-key-example-"] { min-height: 11.25rem; justify-content: space-between; }
+[class*="st-key-example-"]:hover, [class*="st-key-example-"]:focus-within {
+  border-color: var(--sp-primary);
+  box-shadow: 0 6px 20px -12px rgba(15, 118, 110, 0.55);
+  transform: translateY(-2px);
+}
+[data-testid="stMetric"] { background: var(--sp-surface); }
+
+/* Step number chip */
+.sp-step { display: flex; gap: 0.75rem; align-items: flex-start; }
+.sp-step-num {
+  flex: none; width: 1.625rem; height: 1.625rem; border-radius: 50%;
+  background: var(--sp-primary-soft); color: var(--sp-primary);
+  font-size: 0.8125rem; font-weight: 700; display: grid; place-items: center; margin-top: 0.1rem;
+}
+.sp-step-text { color: var(--sp-ink); line-height: 1.55; }
+.sp-step-label { display: block; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--sp-muted); }
+
+/* ---- Confirmation panel ---- */
+.st-key-confirm {
+  background: var(--sp-warn-soft);
+  border-color: #E8C98A;
+  border-left: 4px solid var(--sp-warn);
+  animation: sp-rise 260ms var(--sp-ease) both;
+}
+
+/* ---- How it works pipeline ---- */
+.sp-pipeline { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.875rem; margin: 0.5rem 0 1.5rem !important; padding: 0 !important; list-style: none; }
+.sp-pipeline li { margin: 0 !important; background: var(--sp-surface); border: 1px solid var(--sp-border);
+  border-radius: 0.75rem; padding: 1rem 1.1rem; }
+.sp-pipeline b { display: block; color: var(--sp-ink); margin: 0.5rem 0 0.25rem; font-size: 1rem; }
+.sp-pipeline span { color: var(--sp-muted); font-size: 0.9rem; line-height: 1.5; }
+.sp-pipeline i { font-style: normal; font-size: 0.75rem; font-weight: 700; color: var(--sp-primary);
+  background: var(--sp-primary-soft); border-radius: 999px; padding: 0.15rem 0.55rem; }
+
+/* ---- Sidebar ---- */
+.sp-side-brand { display: flex; align-items: center; gap: 0.6rem; }
+.sp-side-brand .sp-mark { width: 2rem; height: 2rem; border-radius: 0.6rem; }
+.sp-side-brand strong { font-family: Fraunces, Georgia, serif; font-size: 1.2rem; font-weight: 600;
+  color: var(--sp-ink); }
+.sp-tasks { list-style: none; margin: 0 !important; padding: 0 !important; }
+.sp-task { margin: 0 !important; display: flex; gap: 0.6rem; padding: 0.55rem 0; border-bottom: 1px solid var(--sp-border); }
+.sp-task:last-child { border-bottom: 0; }
+.sp-task-bar { flex: none; width: 3px; border-radius: 2px; background: #9AA39E; }
+.sp-task-bar.high { background: #B42318; }
+.sp-task-bar.medium { background: #B45309; }
+.sp-task-bar.low { background: #15803D; }
+.sp-task-title { font-weight: 600; font-size: 0.9rem; line-height: 1.35; color: var(--sp-ink); }
+.sp-task.done .sp-task-title { text-decoration: line-through; color: var(--sp-muted); font-weight: 500; }
+.sp-task-meta { font-size: 0.8rem; color: var(--sp-muted); margin-top: 0.1rem; }
+.sp-section { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase;
+  color: var(--sp-muted); margin: 0.75rem 0 0.1rem; display: flex; justify-content: space-between; }
+
+/* Captions: Streamlit's default falls just under 4.5:1 on this background */
+[data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p { color: var(--sp-muted); opacity: 1; }
+
+/* ---- Interaction ---- */
+button, [role="tab"], summary { transition: background-color 150ms var(--sp-ease),
+  border-color 150ms var(--sp-ease), color 150ms var(--sp-ease), box-shadow 150ms var(--sp-ease); }
+button:focus-visible, [role="tab"]:focus-visible, summary:focus-visible, a:focus-visible {
+  outline: 2px solid var(--sp-primary) !important; outline-offset: 2px;
+}
+[data-testid="stExpander"] details { background: var(--sp-surface); }
+[data-testid="stExpander"] summary:hover { background: #F7F5EF; }
+[data-testid="stChatMessage"] { animation: sp-rise 240ms var(--sp-ease) both; }
+
+@keyframes sp-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ---- Tablet and phone ---- */
+@media (max-width: 900px) {
+  [data-testid="stMainBlockContainer"] { padding: 1.75rem 1.25rem 7rem; }
+  [data-testid="stBottomBlockContainer"] { padding-left: 1.25rem; padding-right: 1.25rem; }
+  .sp-pills { margin-left: 0; width: 100%; }
+}
+@media (max-width: 640px) {
+  [data-testid="stMainBlockContainer"] { padding: 1.25rem 1rem 7rem; }
+  [data-testid="stBottomBlockContainer"] { padding-left: 1rem; padding-right: 1rem; }
+  .sp-title { font-size: 1.625rem; }
+  .sp-mark { width: 2.5rem; height: 2.5rem; }
+  .stButton button, [role="tab"] { min-height: 44px; }
+  /* Avatars cost a fifth of a phone's width; the bubble styling already tells the speakers apart */
+  [data-testid="stChatMessage"] > [data-testid^="stChatMessageAvatar"] { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  [class*="st-key-example-"]:hover { transform: none; }
+}

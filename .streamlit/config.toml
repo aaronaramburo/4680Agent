@@ -1,0 +1,62 @@
+# Design tokens for StudyPilot. Colors, type and radius are set here so every
+# built-in Streamlit component uses them; assets/style.css only adds what the
+# theme cannot express (layout width, hover states, motion).
+
+[theme]
+base = "light"
+primaryColor = "#0F766E"
+backgroundColor = "#FBFAF6"
+secondaryBackgroundColor = "#F2F0E9"
+textColor = "#1B2A28"
+linkColor = "#0F766E"
+borderColor = "#DEDACE"
+showWidgetBorder = true
+showSidebarBorder = true
+baseRadius = "0.625rem"
+buttonRadius = "0.625rem"
+
+font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+headingFont = "Fraunces:https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap"
+codeFont = "JetBrains Mono:https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
+baseFontSize = 16
+codeFontSize = "0.85rem"
+headingFontWeights = [600, 600, 600, 600, 600, 600]
+headingFontSizes = ["2.25rem", "1.5rem", "1.25rem", "1.0625rem", "1rem", "0.9375rem"]
+
+# Semantic colors used by badges, alerts and colored text. Each text color
+# meets 4.5:1 contrast on its background.
+greenColor = "#15803D"
+greenBackgroundColor = "#E4F4EA"
+greenTextColor = "#14532D"
+orangeColor = "#B45309"
+orangeBackgroundColor = "#FBEFD9"
+orangeTextColor = "#7C3A06"
+redColor = "#B42318"
+redBackgroundColor = "#FBE9E7"
+redTextColor = "#8A1C12"
+grayColor = "#5B6660"
+grayBackgroundColor = "#ECEAE2"
+grayTextColor = "#4A544F"
+blueColor = "#1D4ED8"
+blueBackgroundColor = "#E6ECFB"
+blueTextColor = "#1E3A8A"
+codeTextColor = "#0B5F58"
+codeBackgroundColor = "#ECEAE2"
+
+[theme.sidebar]
+backgroundColor = "#F2F0E9"
+secondaryBackgroundColor = "#FBFAF6"
+borderColor = "#DEDACE"
+
+[browser]
+gatherUsageStats = false
+
+[client]
+# Never show Python tracebacks (file paths, local variables) to visitors.
+showErrorDetails = "none"
+toolbarMode = "minimal"
+
+[server]
+# Only files the app renders are sent to the browser; nothing on disk is served directly.
+enableStaticServing = false
+enableXsrfProtection = true
