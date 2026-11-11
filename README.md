@@ -7,7 +7,6 @@ it deletes anything.
 CS4680 Prompt Engineering · Assignment 4 (AI Agent Project)
 
 - **Live app:** https://claroai.streamlit.app
-- **Demo video:** _add the YouTube URL here_
 
 ## The problem
 
