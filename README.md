@@ -167,21 +167,3 @@ pip install -r requirements-dev.txt
 python -m pytest -q
 ```
 
-## Deploy (Streamlit Community Cloud)
-
-1. Push this repository to GitHub.
-2. At [share.streamlit.io](https://share.streamlit.io), create an app from the repo with
-   `app.py` as the main file.
-3. Under **Advanced settings → Secrets**, add:
-   ```toml
-   ANTHROPIC_API_KEY = "your-key"
-   ```
-4. Deploy. Set a monthly spend limit on the key in the Anthropic Console, since the URL is public.
-
-## Configuration
-
-| Variable | Default | Purpose |
-|---|---|---|
-| `ANTHROPIC_API_KEY` | none | Required |
-| `AGENT_MODEL` | `claude-opus-5-5` | Model to use |
-| `AGENT_EFFORT` | `low` | Reasoning effort (`low` to `max`); higher is slower and costs more |
