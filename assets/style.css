@@ -17,7 +17,7 @@
 /* Readable measure on wide screens, breathing room on small ones */
 [data-testid="stMainBlockContainer"] {
   max-width: 62rem;
-  padding: 2.5rem 2rem 7rem;
+  padding: 5rem 2rem 7rem;  /* top clears the 3.75rem toolbar Streamlit Cloud adds */
 }
 [data-testid="stBottomBlockContainer"] { max-width: 62rem; padding-left: 2rem; padding-right: 2rem; }
 
@@ -120,12 +120,12 @@ button:focus-visible, [role="tab"]:focus-visible, summary:focus-visible, a:focus
 
 /* ---- Tablet and phone ---- */
 @media (max-width: 900px) {
-  [data-testid="stMainBlockContainer"] { padding: 1.75rem 1.25rem 7rem; }
+  [data-testid="stMainBlockContainer"] { padding: 4.75rem 1.25rem 7rem; }
   [data-testid="stBottomBlockContainer"] { padding-left: 1.25rem; padding-right: 1.25rem; }
   .sp-pills { margin-left: 0; width: 100%; }
 }
 @media (max-width: 640px) {
-  [data-testid="stMainBlockContainer"] { padding: 1.25rem 1rem 7rem; }
+  [data-testid="stMainBlockContainer"] { padding: 4.5rem 1rem 7rem; }
   [data-testid="stBottomBlockContainer"] { padding-left: 1rem; padding-right: 1rem; }
   .sp-title { font-size: 1.625rem; }
   .sp-mark { width: 2.5rem; height: 2.5rem; }
