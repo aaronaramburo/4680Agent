@@ -39,10 +39,12 @@ def test_home_screen_renders(app):
     assert not app.exception
     assert len([b for b in app.button if b.label == "Try it"]) == 4
     assert not app.error                       # no "missing API key" banner
+    assert app.session_state.ws.list_files() == []       # no sample data
 
 
 def test_request_pauses_for_confirmation_then_runs(app):
     files = app.session_state.ws.files
+    (files / "old_draft.txt").write_text("scratch")
     button(app, "Try it").click().run()
     assert not app.exception
     assert app.session_state.pending is not None

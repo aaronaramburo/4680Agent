@@ -15,10 +15,12 @@ from pathlib import Path
 import streamlit as st
 
 from agent import config
+from agent.actions import ActionError, files as file_actions
+from agent.audit import AuditLog
 from agent.core import Agent, AgentError
 from agent.llm import LLMClient
 from agent.prompts import SYSTEM_PROMPT
-from agent.safety import describe
+from agent.safety import SafetyError, describe
 from agent.schema import TOOLS
 from agent.workspace import Workspace, purge_stale_sessions
 
@@ -41,14 +43,14 @@ DOMAIN = {
 RISK_COLOR = {"read": "gray", "write": "blue", "destructive": "red"}
 
 EXAMPLES = [
-    (":material/event_note:", "Plan my week",
-     "What's due this week? Check the weather in Pomona too and tell me which day is best to study outside."),
-    (":material/menu_book:", "Make a study guide",
-     "Read my biology notes and write a study guide with 5 practice questions to a new file."),
     (":material/add_task:", "Add assignments",
      "Add two tasks: CS4680 demo video due next Friday (high priority) and email the TA about office hours by Wednesday."),
-    (":material/delete_sweep:", "Clean up",
-     "Delete old_draft.txt and remove the reading response task."),
+    (":material/menu_book:", "Study guide from my notes",
+     "Read the notes I uploaded and write a study guide with 5 practice questions to a new file."),
+    (":material/travel_explore:", "Research a topic",
+     "Look up photosynthesis, save a short summary to notes/photosynthesis.md, and add a task to review it tomorrow."),
+    (":material/event_note:", "Plan my week",
+     "What's due this week? Check the weather in Pomona too and tell me which day is best to study outside."),
 ]
 
 PIPELINE = [
@@ -91,6 +93,8 @@ def init_session():
         ss.pending = None   # Step waiting for the user's yes/no
         ss.job = None       # ("request", text) | ("confirm", bool)
         ss.agent = None
+        ss.upload_round = 0
+        ss.upload_notes = []
     ss.ws = Workspace(ss.sid)
     if ss.agent is None and HAS_KEY:
         ss.agent = Agent(LLMClient(), ss.ws)
@@ -108,6 +112,24 @@ def reset_workspace():
     ss = st.session_state
     ss.ws.reset()
     ss.turns, ss.pending, ss.job, ss.agent = [], None, None, None
+
+
+def save_uploads():
+    """Copy uploaded files into the sandbox, under the same rules the agent's own writes follow."""
+    ss = st.session_state
+    uploads = ss.get(f"upload-{ss.upload_round}") or []
+    audit = AuditLog(ss.ws.audit_path)
+    ss.upload_notes = []
+    for upload in uploads:
+        try:
+            saved = file_actions.import_file(ss.ws, upload.name, upload.getvalue())
+            audit.record("file_uploaded", path=saved["path"], bytes=saved["bytes"],
+                         overwrote_existing=saved["overwrote_existing"])
+            ss.upload_notes.append((True, f"Added **{upload.name}**"))
+        except (SafetyError, ActionError) as e:
+            audit.record("upload_rejected", name=upload.name, reason=str(e))
+            ss.upload_notes.append((False, f"**{upload.name}** was not added. {e}"))
+    ss.upload_round += 1   # a new widget key empties the uploader
 
 
 # ---------- the agent loop, driven from the UI ----------
@@ -285,17 +307,32 @@ def render_sidebar():
         files = ss.ws.list_files()
         html(f'<div class="sp-section"><span>Files</span><span>{len(files)}</span></div>')
         for path in files:
-            with st.expander(path.relative_to(ss.ws.files).as_posix(), icon=":material/description:"):
-                st.code(path.read_text(encoding="utf-8", errors="replace"), language=None, wrap_lines=True)
+            name = path.relative_to(ss.ws.files).as_posix()
+            text = path.read_text(encoding="utf-8", errors="replace")
+            with st.expander(name, icon=":material/description:"):
+                st.code(text, language=None, wrap_lines=True)
+                st.download_button("Download", text, file_name=path.name, key=f"dl-{name}",
+                                   icon=":material/download:")
         if not files:
-            st.caption("No files yet.")
+            st.caption("No files yet. Add your own below, or ask the agent to write one.")
+
+        allowed = sorted(ext.lstrip(".") for ext in config.ALLOWED_EXTENSIONS)
+        st.file_uploader("Add your files", type=allowed, accept_multiple_files=True,
+                         key=f"upload-{ss.upload_round}", on_change=save_uploads,
+                         help=f"Plain-text notes only ({', '.join(allowed)}), up to "
+                              f"{config.MAX_FILE_BYTES // 1000} KB each.")
+        for ok, note in ss.upload_notes:
+            (st.success if ok else st.warning)(note, icon=":material/check:" if ok else ":material/warning:")
+        ss.upload_notes = []
 
         st.divider()
         used = ss.agent.llm_calls if ss.agent else 0
         st.progress(min(used / config.MAX_LLM_CALLS_PER_SESSION, 1.0),
                     text=f"Model calls used: {used} of {config.MAX_LLM_CALLS_PER_SESSION}")
-        st.button("Reset workspace", icon=":material/restart_alt:", on_click=reset_workspace,
-                  width="stretch", help="Restore the sample files and tasks and clear the conversation.")
+        with st.popover("Clear workspace", icon=":material/delete:", width="stretch"):
+            st.write("This deletes every file and task in this session and clears the conversation. "
+                     "It can't be undone.")
+            st.button("Yes, clear everything", type="primary", on_click=reset_workspace)
         st.caption(f"Model `{config.MODEL}` · session `{ss.sid}`")
 
 

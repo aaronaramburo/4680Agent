@@ -40,6 +40,16 @@ def append_file(ws, path, content):
     return write_file(ws, path, existing + content) | {"appended_chars": len(content)}
 
 
+def import_file(ws, name, data: bytes):
+    """Save a file the user uploaded. Same sandbox rules as anything the agent writes."""
+    resolve_path(ws.files, name)  # reject bad names before decoding anything
+    try:
+        text = data.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        raise ActionError("It is not a plain-text file.") from None
+    return write_file(ws, name, text)
+
+
 def delete_file(ws, path):
     target = resolve_path(ws.files, path)
     if not target.is_file():

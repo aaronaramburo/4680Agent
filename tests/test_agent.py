@@ -7,7 +7,7 @@ import pytest
 import requests
 
 from agent import config
-from agent.actions import web
+from agent.actions import ActionError, database, files, web
 from agent.core import Agent, AgentError
 from agent.executor import execute
 from agent.interpreter import Action, PlanError, parse_step
@@ -38,7 +38,41 @@ def step(thought="t", actions=(), reply=""):
 
 @pytest.fixture
 def ws(tmp_path):
-    return Workspace("test", base=tmp_path)
+    """A workspace with three files and four tasks, as if a student had been using it."""
+    ws = Workspace("test", base=tmp_path)
+    for name, text in {
+        "notes/biology_ch3.md": "Mitochondria: ATP production via cellular respiration.",
+        "notes/cs4680_prompting.md": "ReAct: reason, act, observe.",
+        "old_draft.txt": "Scratch draft.",
+    }.items():
+        files.import_file(ws, name, text.encode())
+    for title in ("AI agent project", "Chapter 3 quiz", "Lab report", "Reading response 6"):
+        database.add_task(ws, title)
+    return ws
+
+
+def test_new_workspace_starts_empty(tmp_path):
+    fresh = Workspace("fresh", base=tmp_path)
+    assert fresh.list_files() == [] and fresh.query("SELECT * FROM tasks") == []
+
+
+# ---------- uploads ----------
+
+def test_upload_is_saved_and_readable(ws):
+    files.import_file(ws, "syllabus.md", "﻿# Syllabus".encode("utf-8"))   # BOM from Windows editors
+    assert run(ws, "read_file", path="syllabus.md").result["content"] == "# Syllabus"
+
+
+@pytest.mark.parametrize("name, data, error", [
+    ("photo.png", b"\x89PNG", SafetyError),               # not an allowed type
+    ("../outside.txt", b"x", SafetyError),                # escapes the sandbox
+    ("notes.txt", b"\xff\xfe\x00binary", ActionError),    # not text
+    ("big.txt", b"x" * (config.MAX_FILE_BYTES + 1), SafetyError),
+])
+def test_bad_uploads_are_refused(ws, name, data, error):
+    with pytest.raises(error):
+        files.import_file(ws, name, data)
+    assert len(ws.list_files()) == 3
 
 
 def run(ws, tool, **args):

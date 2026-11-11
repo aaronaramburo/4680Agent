@@ -122,6 +122,7 @@ The model proposes; code decides. None of these checks depend on the model behav
 - **Secrets stay on the server.** The API key is read once in `app.py` from `.env` or Streamlit secrets and is only used by server-side Python. It is never rendered, logged or sent to the browser; key-shaped strings are masked in the audit log, tracebacks are hidden from visitors, and `tests/test_security.py` scans the repository for credentials before each deploy.
 - **Daily budget.** A server-wide cap (`AGENT_DAILY_CALL_LIMIT`, default 400 model calls a day) holds even when visitors reload to get a new session.
 - **Session isolation.** Every browser session has its own files, database and log.
+- **Your own files.** The workspace starts empty. Notes uploaded in the sidebar go through the same sandbox checks as files the agent writes (text types only, 50 KB each), and each upload or rejection is logged.
 - **Audit log.** Requests, model calls (with token counts and retries), validation failures,
   plans, confirmations and action results are appended to a JSONL file, shown in the app and
   downloadable.

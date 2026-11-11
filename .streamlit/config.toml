@@ -60,3 +60,5 @@ toolbarMode = "minimal"
 # Only files the app renders are sent to the browser; nothing on disk is served directly.
 enableStaticServing = false
 enableXsrfProtection = true
+# Uploads are small text notes; the sandbox enforces its own 50 KB limit per file.
+maxUploadSize = 1
