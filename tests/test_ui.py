@@ -37,15 +37,18 @@ def button(app, label):
 
 def test_home_screen_renders(app):
     assert not app.exception
-    assert len([b for b in app.button if b.label == "Try it"]) == 4
     assert not app.error                       # no "missing API key" banner
-    assert app.session_state.ws.list_files() == []       # no sample data
+    # blank slate: no sample data, no example prompts, nothing said yet
+    assert app.session_state.ws.list_files() == []
+    assert app.session_state.ws.query("SELECT * FROM tasks") == []
+    assert app.session_state.turns == []
+    assert [b.label for b in app.button] == ["Yes, clear everything"]
 
 
 def test_request_pauses_for_confirmation_then_runs(app):
     files = app.session_state.ws.files
     (files / "old_draft.txt").write_text("scratch")
-    button(app, "Try it").click().run()
+    app.chat_input[0].set_value("delete my old draft").run()
     assert not app.exception
     assert app.session_state.pending is not None
     assert (files / "old_draft.txt").exists()            # nothing deleted before approval

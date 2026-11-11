@@ -1,7 +1,9 @@
 """File operations. Every path goes through safety.resolve_path first."""
+from pathlib import Path
+
 from .. import config
 from ..safety import SafetyError, resolve_path
-from . import ActionError
+from . import ActionError, documents
 
 
 def list_files(ws):
@@ -41,13 +43,24 @@ def append_file(ws, path, content):
 
 
 def import_file(ws, name, data: bytes):
-    """Save a file the user uploaded. Same sandbox rules as anything the agent writes."""
-    resolve_path(ws.files, name)  # reject bad names before decoding anything
-    try:
-        text = data.decode("utf-8-sig")
-    except UnicodeDecodeError:
-        raise ActionError("It is not a plain-text file.") from None
-    return write_file(ws, name, text)
+    """Save a file the user uploaded. Same sandbox rules as anything the agent writes.
+
+    PDF and Word documents are stored as their extracted text, in <name>.txt.
+    """
+    if len(data) > config.MAX_UPLOAD_BYTES:
+        raise SafetyError(f"It is larger than {config.MAX_UPLOAD_BYTES // 1_000_000} MB.")
+    if Path(name).suffix.lower() in config.DOCUMENT_EXTENSIONS:
+        target = f"{name}.txt"
+        resolve_path(ws.files, target)  # reject bad names before parsing anything
+        text = documents.extract_text(name, data)
+    else:
+        target = name
+        resolve_path(ws.files, target)
+        try:
+            text = data.decode("utf-8-sig")
+        except UnicodeDecodeError:
+            raise ActionError("It is not a plain-text file.") from None
+    return write_file(ws, target, text) | {"source": name}
 
 
 def delete_file(ws, path):

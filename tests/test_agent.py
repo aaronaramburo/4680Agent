@@ -1,4 +1,5 @@
 """Offline tests: the model is scripted, so these run without an API key."""
+import io
 import json
 
 import anthropic
@@ -61,6 +62,72 @@ def test_new_workspace_starts_empty(tmp_path):
 def test_upload_is_saved_and_readable(ws):
     files.import_file(ws, "syllabus.md", "﻿# Syllabus".encode("utf-8"))   # BOM from Windows editors
     assert run(ws, "read_file", path="syllabus.md").result["content"] == "# Syllabus"
+
+
+def make_pdf(*pages: str) -> bytes:
+    """A minimal valid PDF with one line of text per page."""
+    objects = ["<</Type/Catalog/Pages 2 0 R>>",
+               "<</Type/Pages/Kids[{}]/Count {}>>".format(
+                   " ".join(f"{4 + 2 * i} 0 R" for i in range(len(pages))), len(pages)),
+               "<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>"]
+    for i, text in enumerate(pages):
+        stream = f"BT /F1 12 Tf 72 720 Td ({text}) Tj ET"
+        objects.append(f"<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents {5 + 2 * i} 0 R"
+                       "/Resources<</Font<</F1 3 0 R>>>>>>")
+        objects.append(f"<</Length {len(stream)}>>stream\n{stream}\nendstream")
+    out, offsets = b"%PDF-1.4\n", []
+    for number, body in enumerate(objects, 1):
+        offsets.append(len(out))
+        out += f"{number} 0 obj{body}endobj\n".encode()
+    xref = len(out)
+    out += f"xref\n0 {len(objects) + 1}\n0000000000 65535 f \n".encode()
+    out += "".join(f"{o:010d} 00000 n \n" for o in offsets).encode()
+    return out + f"trailer<</Size {len(objects) + 1}/Root 1 0 R>>\nstartxref\n{xref}\n%%EOF".encode()
+
+
+def make_docx(build) -> bytes:
+    from docx import Document
+    document, buffer = Document(), io.BytesIO()
+    build(document)
+    document.save(buffer)
+    return buffer.getvalue()
+
+
+def test_pdf_upload_is_stored_as_text(ws):
+    saved = files.import_file(ws, "lecture3.pdf", make_pdf("Osmosis moves water", "Diffusion moves solutes"))
+    assert saved["path"] == "lecture3.pdf.txt" and saved["source"] == "lecture3.pdf"
+    content = run(ws, "read_file", path="lecture3.pdf.txt").result["content"]
+    assert "--- Page 1 ---\nOsmosis moves water" in content and "--- Page 2 ---" in content
+
+
+def test_word_upload_keeps_headings_lists_and_tables(ws):
+    def build(doc):
+        doc.add_heading("Cell structure", level=1)
+        doc.add_paragraph("Mitochondria make ATP.")
+        doc.add_paragraph("Ribosomes", style="List Bullet")
+        table = doc.add_table(rows=1, cols=2)
+        table.rows[0].cells[0].text, table.rows[0].cells[1].text = "Organelle", "Job"
+    files.import_file(ws, "notes.docx", make_docx(build))
+    content = run(ws, "read_file", path="notes.docx.txt").result["content"]
+    assert "# Cell structure" in content and "- Ribosomes" in content and "Organelle | Job" in content
+
+
+@pytest.mark.parametrize("name, data, message", [
+    ("scan.pdf", make_pdf(""), "No selectable text"),
+    ("broken.pdf", b"%PDF-1.4 not really", "could not be read as a PDF"),
+    ("broken.docx", b"PK\x03\x04 not really", "could not be read as a Word document"),
+    ("long.pdf", make_pdf(*["x" * 900] * 149), "longer than"),
+    ("thick.pdf", make_pdf(*["x"] * (config.MAX_PDF_PAGES + 1)), "pages; the limit"),
+])
+def test_unreadable_documents_are_refused_with_a_reason(ws, name, data, message):
+    with pytest.raises(ActionError, match=message):
+        files.import_file(ws, name, data)
+    assert len(ws.list_files()) == 3
+
+
+def test_oversize_upload_is_refused_before_parsing(ws):
+    with pytest.raises(SafetyError, match="larger than"):
+        files.import_file(ws, "huge.pdf", b"x" * (config.MAX_UPLOAD_BYTES + 1))
 
 
 @pytest.mark.parametrize("name, data, error", [

@@ -28,10 +28,16 @@ LLM_TIMEOUT = 120.0
 
 # Sandbox limits
 ALLOWED_EXTENSIONS = {".txt", ".md", ".csv", ".json"}
-MAX_FILE_BYTES = 50_000
+MAX_FILE_BYTES = 120_000
 MAX_FILES = 40
 MAX_PATH_DEPTH = 3
-MAX_READ_CHARS = 20_000
+MAX_READ_CHARS = 120_000      # a stored file is always read whole
+
+# Uploads: PDF and Word files are converted to text on the way in
+DOCUMENT_EXTENSIONS = {".pdf", ".docx"}
+MAX_UPLOAD_BYTES = 10_000_000
+MAX_PDF_PAGES = 150
+MAX_DOCX_UNZIPPED_BYTES = 60_000_000
 
 HTTP_TIMEOUT = 10
 SESSION_TTL_SECONDS = 24 * 3600

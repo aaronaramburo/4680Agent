@@ -1,4 +1,4 @@
-# 🧭 StudyPilot
+# Claro
 
 An AI agent that manages a student's coursework from plain-language requests. It reads and
 writes notes, tracks assignments in a database, pulls in outside information, and asks before
@@ -17,7 +17,7 @@ somewhere else again. Each tool is easy on its own, but stitching them together 
 "read my biology notes, turn them into a study guide, and remind me to review it before
 Thursday's quiz" is three tools and five steps by hand.
 
-StudyPilot takes that sentence and does it. A language model decides *what* to do; ordinary,
+Claro takes that sentence and does it. A language model decides *what* to do; ordinary,
 testable code decides *whether it is allowed* and then does it.
 
 ## What it can do
@@ -117,12 +117,12 @@ The model proposes; code decides. None of these checks depend on the model behav
 - **Confirmation for destructive actions.** Deleting a file or task, and overwriting an existing
   file, stop the loop until the user clicks **Yes, go ahead**. Cancelling is reported back to
   the model.
-- **Limits.** 6 actions per step, 5 steps per request, 40 model calls per session, 50 KB per
+- **Limits.** 6 actions per step, 5 steps per request, 40 model calls per session, 120 KB per
   file, 40 files per workspace.
 - **Secrets stay on the server.** The API key is read once in `app.py` from `.env` or Streamlit secrets and is only used by server-side Python. It is never rendered, logged or sent to the browser; key-shaped strings are masked in the audit log, tracebacks are hidden from visitors, and `tests/test_security.py` scans the repository for credentials before each deploy.
 - **Daily budget.** A server-wide cap (`AGENT_DAILY_CALL_LIMIT`, default 400 model calls a day) holds even when visitors reload to get a new session.
 - **Session isolation.** Every browser session has its own files, database and log.
-- **Your own files.** The workspace starts empty. Notes uploaded in the sidebar go through the same sandbox checks as files the agent writes (text types only, 50 KB each), and each upload or rejection is logged.
+- **Your own files.** The workspace starts empty. Notes uploaded in the sidebar go through the same sandbox checks as files the agent writes (text files, plus PDF and Word documents, which are converted to text; 120 KB of text each), and each upload or rejection is logged.
 - **Audit log.** Requests, model calls (with token counts and retries), validation failures,
   plans, confirmations and action results are appended to a JSONL file, shown in the app and
   downloadable.

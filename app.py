@@ -1,4 +1,4 @@
-"""StudyPilot - Streamlit interface for the coursework agent.
+"""Claro - Streamlit interface for the coursework agent.
 
 Run locally:  streamlit run app.py --server.address localhost
 
@@ -24,7 +24,7 @@ from agent.safety import SafetyError, describe
 from agent.schema import TOOLS
 from agent.workspace import Workspace, purge_stale_sessions
 
-st.set_page_config(page_title="StudyPilot", page_icon=":material/explore:", layout="wide")
+st.set_page_config(page_title="Claro", page_icon=":material/explore:", layout="wide")
 
 # status -> (icon, badge color, words shown to the user)
 STATUS = {
@@ -41,17 +41,6 @@ DOMAIN = {
     "system": (":material/terminal:", "System"),
 }
 RISK_COLOR = {"read": "gray", "write": "blue", "destructive": "red"}
-
-EXAMPLES = [
-    (":material/add_task:", "Add assignments",
-     "Add two tasks: CS4680 demo video due next Friday (high priority) and email the TA about office hours by Wednesday."),
-    (":material/menu_book:", "Study guide from my notes",
-     "Read the notes I uploaded and write a study guide with 5 practice questions to a new file."),
-    (":material/travel_explore:", "Research a topic",
-     "Look up photosynthesis, save a short summary to notes/photosynthesis.md, and add a task to review it tomorrow."),
-    (":material/event_note:", "Plan my week",
-     "What's due this week? Check the weather in Pomona too and tell me which day is best to study outside."),
-]
 
 PIPELINE = [
     ("You ask", "Type a request in your own words. No commands to learn."),
@@ -123,9 +112,11 @@ def save_uploads():
     for upload in uploads:
         try:
             saved = file_actions.import_file(ss.ws, upload.name, upload.getvalue())
-            audit.record("file_uploaded", path=saved["path"], bytes=saved["bytes"],
+            audit.record("file_uploaded", source=upload.name, path=saved["path"], bytes=saved["bytes"],
                          overwrote_existing=saved["overwrote_existing"])
-            ss.upload_notes.append((True, f"Added **{upload.name}**"))
+            converted = saved["path"] != upload.name
+            ss.upload_notes.append((True, f"Added **{upload.name}** as text in **{saved['path']}**"
+                                    if converted else f"Added **{upload.name}**"))
         except (SafetyError, ActionError) as e:
             audit.record("upload_rejected", name=upload.name, reason=str(e))
             ss.upload_notes.append((False, f"**{upload.name}** was not added. {e}"))
@@ -192,7 +183,7 @@ def render_header():
     <header class="sp-hero">
       {LOGO}
       <div>
-        <h1 class="sp-title">StudyPilot</h1>
+        <h1 class="sp-title">Claro</h1>
         <p class="sp-tagline">Ask in plain language. It works across your notes, your assignments and the web,
         and checks with you before it deletes anything.</p>
       </div>
@@ -259,17 +250,13 @@ def render_confirmation(step):
         cancel.button("Cancel", on_click=queue_confirmation, args=(False,), width="stretch")
 
 
-def render_examples():
-    st.markdown("#### What would you like to get done?")
-    st.caption("Start with an example, or type your own request at the bottom of the page.")
-    rows = [EXAMPLES[:2], EXAMPLES[2:]]
-    for r, row in enumerate(rows):
-        for c, (col, (icon, title, prompt)) in enumerate(zip(st.columns(2), row)):
-            with col, st.container(border=True, key=f"example-{r}{c}"):
-                st.markdown(f"**:primary[{icon}] &nbsp;{title}**")
-                st.caption(prompt)
-                st.button("Try it", key=f"try-{r}{c}", icon=":material/arrow_forward:",
-                          on_click=queue_request, args=(prompt,), disabled=not HAS_KEY)
+def render_empty_state():
+    html("""
+    <section class="sp-empty">
+      <h2>What would you like to get done?</h2>
+      <p>Type a request below. Claro can keep track of your assignments, read and write notes in
+      your workspace, and look things up. Add your own files from the sidebar.</p>
+    </section>""")
 
 
 def format_due(iso):
@@ -284,7 +271,7 @@ def format_due(iso):
 def render_sidebar():
     ss = st.session_state
     with st.sidebar:
-        html(f'<div class="sp-side-brand">{LOGO}<strong>StudyPilot</strong></div>')
+        html(f'<div class="sp-side-brand">{LOGO}<strong>Claro</strong></div>')
         st.caption("This is your sandbox. The agent can only read and change what is listed here.")
 
         tasks = ss.ws.query("SELECT id, title, course, due_date, priority, status FROM tasks "
@@ -316,11 +303,11 @@ def render_sidebar():
         if not files:
             st.caption("No files yet. Add your own below, or ask the agent to write one.")
 
-        allowed = sorted(ext.lstrip(".") for ext in config.ALLOWED_EXTENSIONS)
+        allowed = sorted(ext.lstrip(".") for ext in config.ALLOWED_EXTENSIONS | config.DOCUMENT_EXTENSIONS)
         st.file_uploader("Add your files", type=allowed, accept_multiple_files=True,
                          key=f"upload-{ss.upload_round}", on_change=save_uploads,
-                         help=f"Plain-text notes only ({', '.join(allowed)}), up to "
-                              f"{config.MAX_FILE_BYTES // 1000} KB each.")
+                         help="PDF and Word documents are converted to text. "
+                              f"Accepted: {', '.join(allowed)}.")
         for ok, note in ss.upload_notes:
             (st.success if ok else st.warning)(note, icon=":material/check:" if ok else ":material/warning:")
         ss.upload_notes = []
@@ -374,7 +361,7 @@ def render_audit_tab(entries):
                  column_config={"Details": st.column_config.TextColumn(width="large")})
     st.download_button("Download full log (JSONL)", icon=":material/download:",
                        data="\n".join(json.dumps(e, ensure_ascii=False) for e in entries),
-                       file_name=f"studypilot_audit_{st.session_state.sid}.jsonl")
+                       file_name=f"claro_audit_{st.session_state.sid}.jsonl")
 
 
 def render_about_tab():
@@ -414,7 +401,7 @@ chat_tab, audit_tab, about_tab = st.tabs([
 
 with chat_tab:
     if not ss.turns and not ss.job:
-        render_examples()
+        render_empty_state()
     for index, turn in enumerate(ss.turns):
         render_turn(index, turn)
     if ss.pending and not ss.job:
@@ -428,7 +415,7 @@ with about_tab:
     render_about_tab()
 
 placeholder = ("Approve or cancel the pending action first" if ss.pending
-               else "Ask StudyPilot to do something…")
+               else "Ask Claro to do something…")
 if text := st.chat_input(placeholder, disabled=bool(ss.pending) or not HAS_KEY):
     queue_request(text.strip())
     st.rerun()

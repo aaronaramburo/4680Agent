@@ -1,4 +1,4 @@
-# Design tokens for StudyPilot. Colors, type and radius are set here so every
+# Design tokens for Claro. Colors, type and radius are set here so every
 # built-in Streamlit component uses them; assets/style.css only adds what the
 # theme cannot express (layout width, hover states, motion).
 
@@ -60,5 +60,5 @@ toolbarMode = "minimal"
 # Only files the app renders are sent to the browser; nothing on disk is served directly.
 enableStaticServing = false
 enableXsrfProtection = true
-# Uploads are small text notes; the sandbox enforces its own 50 KB limit per file.
-maxUploadSize = 1
+# Largest upload, in MB. Documents are converted to text, which has its own 120 KB limit.
+maxUploadSize = 10

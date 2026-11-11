@@ -8,7 +8,7 @@ _GEOCODE_URL = "https://geocoding-api.open-meteo.com/v1/search"
 _FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 _WIKI_SEARCH_URL = "https://en.wikipedia.org/w/api.php"
 _WIKI_SUMMARY_URL = "https://en.wikipedia.org/api/rest_v1/page/summary/"
-_HEADERS = {"User-Agent": "StudyPilot/1.0 (CS4680 course project)"}
+_HEADERS = {"User-Agent": "Claro/1.0 (CS4680 course project)"}
 
 # WMO weather interpretation codes -> plain words
 _WEATHER_CODES = {

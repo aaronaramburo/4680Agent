@@ -1,4 +1,4 @@
-/* StudyPilot: what the Streamlit theme cannot express.
+/* Claro: what the Streamlit theme cannot express.
    Selectors use the .st-key-* classes Streamlit adds for st.container(key=...),
    so they do not depend on internal markup that changes between versions. */
 
@@ -43,18 +43,18 @@
 .sp-dot.off { background: #B42318; }
 
 /* ---- Cards: examples, steps, metrics ---- */
-[class*="st-key-example-"], [class*="st-key-step-"] {
+[class*="st-key-step-"] {
   background: var(--sp-surface);
   transition: border-color 180ms var(--sp-ease), box-shadow 180ms var(--sp-ease),
               transform 180ms var(--sp-ease);
 }
-[class*="st-key-example-"] { min-height: 11.25rem; justify-content: space-between; }
-[class*="st-key-example-"]:hover, [class*="st-key-example-"]:focus-within {
-  border-color: var(--sp-primary);
-  box-shadow: 0 6px 20px -12px rgba(15, 118, 110, 0.55);
-  transform: translateY(-2px);
-}
 [data-testid="stMetric"] { background: var(--sp-surface); }
+
+/* ---- Empty state ---- */
+.sp-empty { text-align: center; max-width: 34rem; margin: 4.5rem auto 2rem; }
+.sp-empty h2 { font-family: Fraunces, Georgia, serif; font-size: 1.75rem; font-weight: 600;
+  color: var(--sp-ink); margin: 0 0 0.6rem; padding: 0; }
+.sp-empty p { color: var(--sp-muted); line-height: 1.6; margin: 0; }
 
 /* Step number chip */
 .sp-step { display: flex; gap: 0.75rem; align-items: flex-start; }
@@ -136,5 +136,4 @@ button:focus-visible, [role="tab"]:focus-visible, summary:focus-visible, a:focus
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
-  [class*="st-key-example-"]:hover { transform: none; }
 }
