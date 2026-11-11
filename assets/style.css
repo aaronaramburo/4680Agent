@@ -17,7 +17,9 @@
 /* Readable measure on wide screens, breathing room on small ones */
 [data-testid="stMainBlockContainer"] {
   max-width: 62rem;
-  padding: 5rem 2rem 7rem;  /* top clears the 3.75rem toolbar Streamlit Cloud adds */
+  /* Top clears the 3.75rem toolbar Streamlit Cloud adds. Bottom stays small: the chat box has
+     its own reserved area, and extra height here makes the page open scrolled past the header. */
+  padding: 4.25rem 2rem 1.5rem;
 }
 [data-testid="stBottomBlockContainer"] { max-width: 62rem; padding-left: 2rem; padding-right: 2rem; }
 
@@ -51,7 +53,7 @@
 [data-testid="stMetric"] { background: var(--sp-surface); }
 
 /* ---- Empty state ---- */
-.sp-empty { text-align: center; max-width: 34rem; margin: 4.5rem auto 2rem; }
+.sp-empty { text-align: center; max-width: 34rem; margin: 3rem auto 1rem; }
 .sp-empty h2 { font-family: Fraunces, Georgia, serif; font-size: 1.75rem; font-weight: 600;
   color: var(--sp-ink); margin: 0 0 0.6rem; padding: 0; }
 .sp-empty p { color: var(--sp-muted); line-height: 1.6; margin: 0; }
@@ -120,12 +122,12 @@ button:focus-visible, [role="tab"]:focus-visible, summary:focus-visible, a:focus
 
 /* ---- Tablet and phone ---- */
 @media (max-width: 900px) {
-  [data-testid="stMainBlockContainer"] { padding: 4.75rem 1.25rem 7rem; }
+  [data-testid="stMainBlockContainer"] { padding: 4.25rem 1.25rem 1.5rem; }
   [data-testid="stBottomBlockContainer"] { padding-left: 1.25rem; padding-right: 1.25rem; }
   .sp-pills { margin-left: 0; width: 100%; }
 }
 @media (max-width: 640px) {
-  [data-testid="stMainBlockContainer"] { padding: 4.5rem 1rem 7rem; }
+  [data-testid="stMainBlockContainer"] { padding: 4rem 1rem 1.25rem; }
   [data-testid="stBottomBlockContainer"] { padding-left: 1rem; padding-right: 1rem; }
   .sp-title { font-size: 1.625rem; }
   .sp-mark { width: 2.5rem; height: 2.5rem; }
